@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PromptShield ~ Shadow AI Guard</title>
+
+<!-- Two deliberately paired typefaces: Fraunces (stamped, editorial serif) for
+     headlines to carry the "seal/shield" personality, IBM Plex Sans for body
+     copy so long-form text stays easy to read. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  /* === Design tokens === */
+  :root {
+    --bg: #10131a;
+    --surface: #171b24;
+    --surface-border: #262b38;
+    --accent: #d9a441;      /* brass/seal accent — primary CTAs, emblem */
+    --accent-teal: #4fd1c5; /* circuit/data accent — used sparingly */
+    --text: #edeef2;
+    --text-muted: #8a8f9c;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --measure: 62ch;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.15; margin: 0; }
+
+  a { color: inherit; }
+
+  section { padding: 96px 24px; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  .eyebrow-free-label { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 8px; }
+
+  /* === Navigation === */
+  header.site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: rgba(16, 19, 26, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .wordmark span { color: var(--accent); }
+
+  nav.nav-links { display: flex; gap: 28px; }
+
+  nav.nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.94rem;
+    transition: color 0.15s ease;
+  }
+
+  nav.nav-links a:hover { color: var(--text); }
+
+  /* === Hero === */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 48px;
+    align-items: center;
+    min-height: 86vh;
+    padding-top: 48px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    max-width: 14ch;
+  }
+
+  .hero-copy p.subhead {
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    max-width: 46ch;
+    margin: 24px 0 36px;
+  }
+
+  .cta-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-block;
+    padding: 14px 26px;
+    border-radius: 6px;
+    font-size: 0.98rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .btn-primary { background: var(--accent); color: #171106; }
+  .btn-primary:hover { transform: translateY(-1px); background: #e6b357; }
+
+  .btn-secondary { border-color: var(--surface-border); color: var(--text); background: transparent; }
+  .btn-secondary:hover { border-color: var(--accent-teal); }
+
+  #hero-canvas-wrap { position: relative; height: 480px; }
+  #hero-canvas-wrap canvas { width: 100% !important; height: 100% !important; }
+
+  /* One orchestrated load-in moment for the hero -- the only scroll-independent
+     animation on the page, respected/skipped under reduced-motion below. */
+  .hero-copy > * { opacity: 0; transform: translateY(10px); animation: rise 0.7s ease forwards; }
+  .hero-copy h1 { animation-delay: 0.05s; }
+  .hero-copy p.subhead { animation-delay: 0.18s; }
+  .hero-copy .cta-row { animation-delay: 0.3s; }
+
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-copy > * { animation: none; opacity: 1; transform: none; }
+  }
+
+  /* === About === */
+  .about p { max-width: var(--measure); font-size: 1.15rem; color: var(--text-muted); }
+  .about p.lede { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--text); max-width: var(--measure); }
+
+  /* === Stats strip === */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    border-top: 1px solid var(--surface-border);
+    border-bottom: 1px solid var(--surface-border);
+    padding: 56px 24px;
+  }
+
+  .stat .num { font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.6rem); color: var(--accent-teal); }
+  .stat .label { color: var(--text-muted); font-size: 0.92rem; margin-top: 6px; }
+
+  /* === Features -- a spec-sheet list, deliberately not repeated shadow cards === */
+  .feature-list { border-top: 1px solid var(--surface-border); }
+
+  .feature-row {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 32px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .feature-row h3 { font-size: 1.15rem; color: var(--accent); }
+  .feature-row p { margin: 0; color: var(--text-muted); max-width: 56ch; }
+
+  /* === How it works -- numbering is justified here: it's a real sequence === */
+  .steps { display: flex; flex-direction: column; gap: 0; max-width: 760px; }
+
+  .step { display: grid; grid-template-columns: 48px 1fr; gap: 20px; position: relative; padding-bottom: 40px; }
+
+  .step:last-child { padding-bottom: 0; }
+
+  .step-index {
+    width: 40px; height: 40px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    background: var(--bg);
+    position: relative;
+    z-index: 1;
+  }
+
+  .step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 19px; top: 40px; bottom: -8px;
+    width: 1px;
+    background: var(--surface-border);
+  }
+
+  .step h3 { font-size: 1.05rem; margin-bottom: 4px; }
+  .step p { margin: 0; color: var(--text-muted); }
+
+  /* === Download === */
+  .download-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  .download-steps ol { margin: 0; padding-left: 20px; color: var(--text-muted); }
+  .download-steps li { margin-bottom: 10px; }
+
+  .download-cta { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 16px; }
+
+  /* === Maker === */
+  .maker-row { display: flex; align-items: center; gap: 24px; }
+
+  .avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-teal));
+    color: #10131a;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .maker-role { color: var(--text-muted); font-size: 0.95rem; margin-top: 4px; }
+
+  /* === Open source note === */
+  .oss p { color: var(--text-muted); max-width: var(--measure); }
+  .oss a { color: var(--accent-teal); }
+
+  /* === Footer === */
+  footer {
+    border-top: 1px solid var(--surface-border);
+    padding: 32px 24px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer a { color: var(--text-muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  /* === Responsive === */
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    #hero-canvas-wrap { height: 320px; order: -1; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .feature-row { grid-template-columns: 1fr; }
+    .download-card { grid-template-columns: 1fr; }
+    nav.nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="wordmark">PromptShield <span>~ Shadow AI Guard</span></div>
+  <nav class="nav-links">
+    <a href="#about">About</a>
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#download">Download</a>
+  </nav>
+</header>
+
+<!-- === Hero === -->
+<section class="hero wrap">
+  <div class="hero-copy">
+    <h1>Stop sensitive data leaking into public AI chat tools.</h1>
+    <p class="subhead">
+      PromptShield intercepts what your team types into ChatGPT, Gemini, and Claude —
+      catching API keys, passwords, customer records, and source code before they
+      ever leave the browser.
+    </p>
+    <div class="cta-row">
+      <a href="#download" class="btn btn-primary">Download the extension</a>
+      <!-- TODO: replace with your actual GitHub repo URL once it's public -->
+      <a href="https://github.com/YOUR_USERNAME/promptshield" class="btn btn-secondary">View on GitHub</a>
+    </div>
+  </div>
+  <div id="hero-canvas-wrap"></div>
+</section>
+
+<!-- === About === -->
+<section class="about wrap" id="about">
+  <p class="lede">Generative AI moved into every workflow almost overnight — and so did the risk of employees pasting things they shouldn't.</p>
+  <p style="margin-top: 24px;">
+    Shadow AI — the use of AI tools outside a company's visibility or approval — is
+    invisible to normal security tools, because it travels over ordinary encrypted
+    web traffic. PromptShield doesn't try to ban AI use. It sits at the one place
+    that actually matters: the moment before a message is sent, checking it locally
+    and blocking anything sensitive before it reaches the AI provider.
+  </p>
+</section>
+
+<!-- === Stats === -->
+<div class="stats wrap">
+  <div class="stat"><div class="num">88.4%</div><div class="label">F1 score, fine-tuned PII model</div></div>
+  <div class="stat"><div class="num">98.5%</div><div class="label">Detection accuracy</div></div>
+  <div class="stat"><div class="num">68k+</div><div class="label">Training examples across 17 PII types</div></div>
+  <div class="stat"><div class="num">&lt;15ms</div><div class="label">Latency for structured-secret matches</div></div>
+</div>
+
+<!-- === Features === -->
+<section class="wrap" id="features">
+  <h2 style="font-size: 1.9rem; margin-bottom: 40px;">What it catches</h2>
+  <div class="feature-list">
+    <div class="feature-row">
+      <h3>Real-time interception</h3>
+      <p>Watches typing, pasting, and submission on ChatGPT, Gemini, and Claude — checked before anything is sent, not after.</p>
+    </div>
+    <div class="feature-row">
+      <h3>Hybrid detection engine</h3>
+      <p>A regex engine catches structured secrets (API keys, database credentials, private keys) instantly, running alongside a fine-tuned transformer model for unstructured PII like names, emails, and addresses.</p>
+    </div>
+    <div class="feature-row">
+      <h3>Tamper-evident audit log</h3>
+      <p>Every blocked and flagged submission is recorded in a hash-chained log, so security teams can verify nothing was altered after the fact.</p>
+    </div>
+    <div class="feature-row">
+      <h3>India-specific identifiers</h3>
+      <p>Detects Aadhaar numbers (validated with the Verhoeff checksum, not just pattern-matching) and PAN cards, alongside standard global PII types.</p>
+    </div>
+    <div class="feature-row">
+      <h3>Self-hosted by design</h3>
+      <p>The backend runs on your own machine or infrastructure. Sensitive prompts are never sent to a third party for analysis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- === How it works === -->
+<section class="wrap" id="how-it-works">
+  <h2 style="font-size: 1.9rem; margin-bottom: 40px;">How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-index">1</div>
+      <div><h3>Watching the input</h3><p>A content script watches the message box, paste events, and the send action on supported AI chat sites.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-index">2</div>
+      <div><h3>Checking before sending</h3><p>Before the message is submitted, the extension sends the text to your PromptShield backend for analysis.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-index">3</div>
+      <div><h3>Two detectors, run together</h3><p>A regex engine flags structured secrets; a fine-tuned DistilBERT model flags unstructured PII — both run in parallel.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-index">4</div>
+      <div><h3>One decision, explained</h3><p>Results are combined into a single allow-or-block decision, with a plain explanation of what was found.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-index">5</div>
+      <div><h3>Blocked, not silently dropped</h3><p>If something sensitive is found, nothing is sent — and the employee sees exactly why, right where they were typing.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- === Download === -->
+<section class="wrap" id="download">
+  <h2 style="font-size: 1.9rem; margin-bottom: 40px;">Get PromptShield</h2>
+  <div class="download-card">
+    <div class="download-steps">
+      <p style="margin-top:0; color: var(--text-muted);">The extension currently installs in developer mode:</p>
+      <ol>
+        <li>Download the extension .zip below</li>
+        <li>Extract it anywhere on your computer</li>
+        <li>Open <code>chrome://extensions</code></li>
+        <li>Turn on Developer Mode (top right)</li>
+        <li>Click "Load unpacked" and select the extracted folder</li>
+      </ol>
+    </div>
+    <div class="download-cta">
+      <!-- TODO: replace with your actual GitHub Release asset URL -->
+      <a href="https://github.com/YOUR_USERNAME/promptshield/releases/latest/download/promptshield-extension.zip" class="btn btn-primary">Download extension (.zip)</a>
+      <a href="https://github.com/YOUR_USERNAME/promptshield#backend-setup" class="btn btn-secondary">Backend setup guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- === Maker === -->
+<section class="wrap">
+  <h2 style="font-size: 1.9rem; margin-bottom: 32px;">Built by</h2>
+  <div class="maker-row">
+    <div class="avatar">SS</div>
+    <div>
+      <div style="font-family: var(--serif); font-size: 1.15rem;">Shlok Srivastava</div>
+      <div class="maker-role">Creator &amp; Developer of PromptShield</div>
+    </div>
+  </div>
+</section>
+
+<!-- === Open source === -->
+<section class="oss wrap">
+  <h2 style="font-size: 1.9rem; margin-bottom: 20px;">Open source</h2>
+  <p>
+    PromptShield's code is open source under the MIT License.
+    <!-- TODO: replace with your actual GitHub repo URL -->
+    View the source on <a href="https://github.com/YOUR_USERNAME/promptshield">GitHub</a>.
+  </p>
+  <p>
+    The PII detection model was fine-tuned on the ai4privacy/pii-masking-400k dataset
+    for academic use, cited per its license. The dataset itself is not redistributed —
+    only the trained model and training script are included in this repository.
+  </p>
+</section>
+
+<footer>
+  <div>© <span id="year"></span> PromptShield ~ Shadow AI Guard</div>
+  <div>
+    <a href="https://github.com/YOUR_USERNAME/promptshield">GitHub</a> &nbsp;·&nbsp;
+    <a href="#about">About</a> &nbsp;·&nbsp;
+    MIT License
+  </div>
+</footer>
+
+<!-- === 3D hero shield ===
+     Isolated Three.js scene: builds a faceted shield emblem from a 2D outline,
+     extruded and beveled, with a wireframe overlay for the "circuit" accent.
+     The only continuous motion on the page is this shield's slow rotation. -->
+<script type="module">
+  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+  const mount = document.getElementById("hero-canvas-wrap");
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // --- Scene / camera / renderer -------------------------------------------
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, mount.clientWidth / mount.clientHeight, 0.1, 100);
+  camera.position.set(0, 0, 7);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(mount.clientWidth, mount.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  mount.appendChild(renderer.domElement);
+
+  // --- Build a shield-shaped outline (2D), then extrude it into 3D ---------
+  function buildShieldShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(-1, 1.3);
+    shape.lineTo(1, 1.3);
+    shape.lineTo(1, 0.2);
+    shape.bezierCurveTo(1, -0.9, 0.5, -1.5, 0, -1.9);
+    shape.bezierCurveTo(-0.5, -1.5, -1, -0.9, -1, 0.2);
+    shape.lineTo(-1, 1.3);
+    return shape;
+  }
+
+  const extrudeSettings = { depth: 0.35, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 3 };
+  const shieldGeometry = new THREE.ExtrudeGeometry(buildShieldShape(), extrudeSettings);
+  shieldGeometry.center();
+
+  const shieldMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1b2030,
+    metalness: 0.4,
+    roughness: 0.35,
+    emissive: 0xd9a441,
+    emissiveIntensity: 0.08,
+  });
+  const shieldMesh = new THREE.Mesh(shieldGeometry, shieldMaterial);
+  scene.add(shieldMesh);
+
+  // Wireframe overlay in the teal accent -- the "circuit/data" motif.
+  const wireGeometry = new THREE.WireframeGeometry(shieldGeometry);
+  const wireMaterial = new THREE.LineBasicMaterial({ color: 0x4fd1c5, transparent: true, opacity: 0.35 });
+  const wireMesh = new THREE.LineSegments(wireGeometry, wireMaterial);
+  shieldMesh.add(wireMesh);
+
+  // --- Lighting --------------------------------------------------------------
+  scene.add(new THREE.AmbientLight(0x404040, 1.2));
+
+  const keyLight = new THREE.PointLight(0xd9a441, 40, 20);
+  keyLight.position.set(3, 3, 4);
+  scene.add(keyLight);
+
+  const rimLight = new THREE.PointLight(0x4fd1c5, 25, 20);
+  rimLight.position.set(-4, -2, 3);
+  scene.add(rimLight);
+
+  // --- Animation loop: slow continuous rotation is the page's one motion moment ---
+  let frame = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!prefersReducedMotion) {
+      frame += 0.004;
+      shieldMesh.rotation.y = frame;
+      shieldMesh.rotation.x = Math.sin(frame * 0.6) * 0.15;
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // --- Responsive resize -------------------------------------------------
+  window.addEventListener("resize", () => {
+    camera.aspect = mount.clientWidth / mount.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+  });
+</script>
+
+<script>
+  // Keeps the footer year correct without hardcoding it.
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

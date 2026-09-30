@@ -1,0 +1,5 @@
+Precision: 0.8770
+Recall: 0.8915 
+F1: 0.8842
+Accuracy: 0.9849
+Eval loss: 0.0489
